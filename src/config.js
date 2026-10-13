@@ -1,22 +1,30 @@
 // Base URL for the backend API.
-const DEFAULT_RENDER_BACKEND = 'https://campus-complaint-management-sys-backend.onrender.com';
+export const DEFAULT_BACKEND_URL = 'https://campus-complaint-management-sys-backend.onrender.com';
 
 export function getApiUrl() {
   if (typeof window !== 'undefined') {
+    const isHosted = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
     const custom = localStorage.getItem('API_URL');
     if (custom && custom.trim()) {
-      return custom.trim().replace(/\/+$/, '');
+      const trimmed = custom.trim().replace(/\/+$/, '');
+      // If we are hosted on Render but localStorage somehow has localhost, clear it!
+      if (isHosted && (trimmed.includes('localhost') || trimmed.includes('127.0.0.1'))) {
+        localStorage.removeItem('API_URL');
+      } else {
+        return trimmed;
+      }
     }
-  }
 
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && envUrl.trim()) {
-    return envUrl.trim().replace(/\/+$/, '');
-  }
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl && envUrl.trim()) {
+      return envUrl.trim().replace(/\/+$/, '');
+    }
 
-  // If accessed on Render or outside localhost, default to the deployed Render backend
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return DEFAULT_RENDER_BACKEND;
+    // Always default to the live Render backend when deployed online
+    if (isHosted) {
+      return DEFAULT_BACKEND_URL;
+    }
   }
 
   return 'http://localhost:8080';

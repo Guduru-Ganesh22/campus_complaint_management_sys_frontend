@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { getApiUrl, setApiUrl } from '../config';
-
-const DEFAULT_RENDER_BACKEND = 'https://campus-complaint-management-sys-backend.onrender.com';
+import { getApiUrl, setApiUrl, DEFAULT_BACKEND_URL } from '../config';
 
 export default function BackendConfigBar() {
   const current = getApiUrl();
-  const isDefaultLocal = current.includes('localhost') && typeof window !== 'undefined' && window.location.hostname !== 'localhost';
-  const [open, setOpen] = useState(isDefaultLocal);
-  const [url, setUrl] = useState(isDefaultLocal ? DEFAULT_RENDER_BACKEND : current);
+  const isHosted = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  const isLocalhost = current.includes('localhost') || current.includes('127.0.0.1');
+
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState(isLocalhost && isHosted ? DEFAULT_BACKEND_URL : current);
 
   const save = (e) => {
     e.preventDefault();
@@ -17,15 +17,15 @@ export default function BackendConfigBar() {
     }
   };
 
-  const useDefault = () => {
-    setApiUrl(DEFAULT_RENDER_BACKEND);
+  const resetToDefault = () => {
+    setApiUrl(DEFAULT_BACKEND_URL);
     window.location.reload();
   };
 
   return (
     <div style={{
-      background: isDefaultLocal ? '#fef3c7' : '#f8fafc',
-      border: isDefaultLocal ? '1px solid #f59e0b' : '1px solid #e2e8f0',
+      background: (isLocalhost && isHosted) ? '#fef2f2' : '#f0fdf4',
+      border: (isLocalhost && isHosted) ? '1px solid #f87171' : '1px solid #86efac',
       borderRadius: '8px',
       padding: '10px 14px',
       marginBottom: '16px',
@@ -33,27 +33,31 @@ export default function BackendConfigBar() {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>
-          <strong>Backend API:</strong>{' '}
-          <code style={{ background: '#e2e8f0', padding: '2px 5px', borderRadius: '4px' }}>{current}</code>
+          <strong style={{ color: (isLocalhost && isHosted) ? '#b91c1c' : '#166534' }}>
+            {(isLocalhost && isHosted) ? '⚠️ Backend:' : '🟢 Backend:'}
+          </strong>{' '}
+          <code style={{ background: '#ffffff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+            {current}
+          </code>
         </span>
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem' }}
+          style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline' }}
         >
           {open ? 'Hide' : 'Change'}
         </button>
       </div>
 
-      {isDefaultLocal && (
+      {isLocalhost && isHosted && (
         <div style={{ marginTop: '8px' }}>
           <button
             type="button"
-            onClick={useDefault}
+            onClick={resetToDefault}
             className="btn btn-primary btn-sm"
-            style={{ width: '100%', marginBottom: '8px' }}
+            style={{ width: '100%' }}
           >
-            Connect to Live Render Backend
+            Switch to Live Render Backend
           </button>
         </div>
       )}
@@ -64,7 +68,7 @@ export default function BackendConfigBar() {
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://campus-complaint-management-sys-backend.onrender.com"
+            placeholder={DEFAULT_BACKEND_URL}
             required
             className="form-control"
             style={{ fontSize: '0.85rem', padding: '4px 8px' }}
