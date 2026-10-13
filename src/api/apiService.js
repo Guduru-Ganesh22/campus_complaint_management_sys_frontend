@@ -1,11 +1,12 @@
 import axios from 'axios';
-import API_URL from '../config';
+import { getApiUrl } from '../config';
 
 // ── Axios instance ─────────────────────────────────────────────────────────
-const api = axios.create({ baseURL: API_URL });
+const api = axios.create();
 
-// Attach JWT token automatically to every request
+// Attach dynamic baseURL and JWT token automatically to every request
 api.interceptors.request.use((config) => {
+  config.baseURL = getApiUrl();
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
@@ -16,7 +17,8 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.clear();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(err);

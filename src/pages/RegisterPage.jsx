@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register as apiRegister } from '../api/apiService';
+import { getApiUrl } from '../config';
+import BackendConfigBar from '../components/BackendConfigBar';
 
 const ROLES = [
   { value: 'STUDENT',     label: 'Student'              },
@@ -43,7 +45,11 @@ export default function RegisterPage() {
       setSuccess(data.message || 'Registration successful!');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed.');
+      if (!err.response) {
+        setError(`Cannot reach backend server at ${getApiUrl()}. Please check that the backend is awake or update the backend URL above.`);
+      } else {
+        setError(err.response?.data?.message || 'Registration failed.');
+      }
     } finally {
       setLoading(false);
     }
@@ -54,6 +60,8 @@ export default function RegisterPage() {
       <div className="auth-card">
         <h1>Create account</h1>
         <p className="subtitle">Join Campus Complaint Management</p>
+
+        <BackendConfigBar />
 
         {error   && <div className="alert alert-error">{error}</div>}
         {success && <div className="alert alert-success">{success}</div>}

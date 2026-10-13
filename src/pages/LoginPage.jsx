@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login as apiLogin } from '../api/apiService';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config';
+import BackendConfigBar from '../components/BackendConfigBar';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -22,7 +24,11 @@ export default function LoginPage() {
       signIn(data);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      if (!err.response) {
+        setError(`Cannot reach backend server at ${getApiUrl()}. Please check that the backend is awake or update the backend URL above.`);
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
@@ -33,6 +39,8 @@ export default function LoginPage() {
       <div className="auth-card">
         <h1>Welcome back 👋</h1>
         <p className="subtitle">Sign in to Campus Complaint Management</p>
+
+        <BackendConfigBar />
 
         {error && <div className="alert alert-error">{error}</div>}
 
