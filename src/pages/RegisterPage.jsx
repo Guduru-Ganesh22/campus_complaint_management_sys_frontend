@@ -30,15 +30,15 @@ export default function RegisterPage() {
       return;
     }
 
-    if (form.password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters.');
       return;
     }
 
     setLoading(true);
     try {
       const { data } = await apiRegister({
-        email:    form.email,
+        email:    form.email.trim(),
         password: form.password,
         role:     form.role,
       });
@@ -48,7 +48,9 @@ export default function RegisterPage() {
       if (!err.response) {
         setError(`Cannot reach backend server at ${getApiUrl()}. Please check that the backend is awake or update the backend URL above.`);
       } else {
-        setError(err.response?.data?.message || 'Registration failed.');
+        const resData = err.response.data;
+        const msg = resData?.message || resData?.errors?.[0]?.defaultMessage || 'Registration failed.';
+        setError(msg);
       }
     } finally {
       setLoading(false);
@@ -87,10 +89,10 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Password (min. 8 characters)</label>
             <input
               id="password" name="password" type="password" required
-              className="form-control" placeholder="Min. 6 characters"
+              className="form-control" placeholder="At least 8 characters"
               value={form.password} onChange={handle}
             />
           </div>
