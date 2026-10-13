@@ -1,5 +1,6 @@
 // Base URL for the backend API.
-// Allows dynamic configuration via localStorage or build-time VITE_API_URL.
+const DEFAULT_RENDER_BACKEND = 'https://campus-complaint-management-sys-backend.onrender.com';
+
 export function getApiUrl() {
   if (typeof window !== 'undefined') {
     const custom = localStorage.getItem('API_URL');
@@ -11,6 +12,11 @@ export function getApiUrl() {
   const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl && envUrl.trim()) {
     return envUrl.trim().replace(/\/+$/, '');
+  }
+
+  // If accessed on Render or outside localhost, default to the deployed Render backend
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return DEFAULT_RENDER_BACKEND;
   }
 
   return 'http://localhost:8080';

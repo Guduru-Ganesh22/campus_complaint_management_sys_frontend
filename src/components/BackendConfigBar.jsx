@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { getApiUrl, setApiUrl } from '../config';
 
+const DEFAULT_RENDER_BACKEND = 'https://campus-complaint-management-sys-backend.onrender.com';
+
 export default function BackendConfigBar() {
   const current = getApiUrl();
   const isDefaultLocal = current.includes('localhost') && typeof window !== 'undefined' && window.location.hostname !== 'localhost';
   const [open, setOpen] = useState(isDefaultLocal);
-  const [url, setUrl] = useState(current);
+  const [url, setUrl] = useState(isDefaultLocal ? DEFAULT_RENDER_BACKEND : current);
 
   const save = (e) => {
     e.preventDefault();
@@ -13,6 +15,11 @@ export default function BackendConfigBar() {
       setApiUrl(url.trim());
       window.location.reload();
     }
+  };
+
+  const useDefault = () => {
+    setApiUrl(DEFAULT_RENDER_BACKEND);
+    window.location.reload();
   };
 
   return (
@@ -38,13 +45,26 @@ export default function BackendConfigBar() {
         </button>
       </div>
 
+      {isDefaultLocal && (
+        <div style={{ marginTop: '8px' }}>
+          <button
+            type="button"
+            onClick={useDefault}
+            className="btn btn-primary btn-sm"
+            style={{ width: '100%', marginBottom: '8px' }}
+          >
+            Connect to Live Render Backend
+          </button>
+        </div>
+      )}
+
       {open && (
         <form onSubmit={save} style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://your-backend.onrender.com"
+            placeholder="https://campus-complaint-management-sys-backend.onrender.com"
             required
             className="form-control"
             style={{ fontSize: '0.85rem', padding: '4px 8px' }}
